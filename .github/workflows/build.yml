@@ -19,13 +19,15 @@ jobs:
       - name: Create debug keystore
         run: |
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000 || true
-      - working-directory: .
-        run: flutter pub get
-      - working-directory: .
-        run: flutter build apk --release
-      - working-directory: .
-        run: flutter build appbundle --release
-      - uses: actions/upload-artifact@v4
+      - run: flutter pub get
+      - name: Fix Android v1 embedding
+        run: |
+          rm -rf android
+          flutter create . --platforms=android --org com.example
+      - run: flutter build apk --release
+      - run: flutter build appbundle --release
+      - name: Upload APK and AAB
+        uses: actions/upload-artifact@v4
         with:
           name: abu-bahri-apk-aab
           path: |
