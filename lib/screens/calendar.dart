@@ -1,0 +1,1 @@
+import 'package:flutter/material.dart'; import '../main.dart'; class CalendarScreen extends StatelessWidget { @override Widget build(BuildContext context) { return WatermarkScaffold(title: 'التقويم - يومي/اسبوعي/شهري/سنوي', child: Center(child: Text('التقويم يعرض مهامك حسب اليوم والشهر والسنة', style: TextStyle(fontSize:18)))); } }
