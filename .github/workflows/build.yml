@@ -14,13 +14,13 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
+          flutter-version: '3.24.5'
           channel: 'stable'
       - name: Create debug keystore
         run: |
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000 || true
       - run: flutter pub get
-      - name: Fix Android and Kotlin
+      - name: Fix Android
         run: |
           cp -r lib lib_backup
           rm -rf android
@@ -29,11 +29,16 @@ jobs:
           mv lib_backup lib
           sed -i "s/ext.kotlin_version = '.*'/ext.kotlin_version = '1.9.25'/" android/build.gradle || true
           sed -i "s/\"org.jetbrains.kotlin.android\" version \".*\"/\"org.jetbrains.kotlin.android\" version \"1.9.25\"/" android/settings.gradle || true
+          # Fix old plugins without namespace
+          for f in $(find ~/.pub-cache -name build.gradle | grep flutter_qiblah); do
+            if ! grep -q namespace "$f"; then
+              sed -i "/^android {/a \    namespace 'com.flutter_qiblah'" "$f"
+            fi
+          done
       - run: flutter pub get
       - run: flutter build apk --release
       - run: flutter build appbundle --release
-      - name: Upload APK and AAB
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: abu-bahri-apk-aab
           path: |
