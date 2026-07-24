@@ -14,19 +14,22 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.29.3'
           channel: 'stable'
       - name: Create debug keystore
         run: |
           keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000 || true
       - run: flutter pub get
-      - name: Fix Android
+      - name: Fix Android and Kotlin
         run: |
           cp -r lib lib_backup
           rm -rf android
           flutter create . --platforms=android --project-name abu_bahri_tasks --org com.example
           rm -rf lib
           mv lib_backup lib
+          sed -i "s/ext.kotlin_version = '.*'/ext.kotlin_version = '1.9.25'/" android/build.gradle || true
+          sed -i "s/\"org.jetbrains.kotlin.android\" version \".*\"/\"org.jetbrains.kotlin.android\" version \"1.9.25\"/" android/settings.gradle || true
+      - run: flutter pub get
       - run: flutter build apk --release
       - run: flutter build appbundle --release
       - name: Upload APK and AAB
